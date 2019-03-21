@@ -5,6 +5,9 @@
 /.pnp
 .pnp.js
 
+#db
+/backend/mongo_db/db
+
 # testing
 /coverage
 
