@@ -3,6 +3,7 @@ const bluebird = require('bluebird');
 
 module.exports = () =>{
   mongoose.Promise = bluebird;
+  mongoose.set('debug', true);
 
   const options = {
     useCreateIndex: true,

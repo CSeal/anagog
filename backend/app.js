@@ -1,9 +1,14 @@
 const path = require('path');
-const connectDb = require('./core/mongooseInit');
+const connectDb = require(path.join(__dirname, 'core', 'mongooseInit.js'));
 const startServer = () => {
-  const server = require('./server');
-  const setRoutes = require('./core/router');
+  const strategy = require(path.join(__dirname, 'core', 'passportAuthStrategy.js'));
+  const passport = strategy(__dirname);
+  const server = require(path.join(__dirname, 'server.js'));
+  server.use(passport.initialize());
+
+  const setRoutes = require(path.join(__dirname, 'core', 'router.js'));
   setRoutes(path.join(__dirname, 'controllers'), path.join(__dirname, 'models'));
+
   server.all('*', server.err404);
 }
 

@@ -1,103 +1,48 @@
 const BaseController = require('../core/baseController')
 const UsersCtrl = new BaseController();
 
-UsersCtrl.get('/users/', (req, res, next) => {
-  const users = UsersCtrl.users_tb;
-  const resp = [];
-  for( let key in users){
-    const currentUser = Object.assign({}, users[key]);
-    delete currentUser.password;
-    resp.push(currentUser);
+UsersCtrl.post('/login', null, (req, res, next) => {
+
+  const errors = UsersCtrl.getTestValidation(req.body);
+  if(errors) {
+    return UsersCtrl._sendJSONresponse(res, '400', null, errors);
   }
-  res.send(resp)
+  UsersCtrl.passport.authenticate('local',
+                                    function(err, user, info){
+    if (!user) {
+      const { user_not_found } = UsersCtrl.errors_msg_obj;
+      return UsersCtrl._sendJSONresponse(res, '401', null, [user_not_found], info.message);
+    }
+    if (err) {
+      return UsersCtrl._sendJSONresponse(res, '404', null, [err]);
+    }
+    const tokenPayload = {
+      id: user.id,
+      userName: user.userName,
+    }
+    const token = user.generateJWT(tokenPayload);
+    if (token){
+      const dataPayload = {
+        user: {
+          userName: user.userName,
+          permissions: user.permissions
+        },
+        token,
+      }
+      return UsersCtrl._sendJSONresponse(res, '200', dataPayload);
+    }
+    const { users_token_was_not_created } = UsersCtrl.errors_msg_obj;
+    return UsersCtrl._sendJSONresponse(res, '500', null, [users_token_was_not_created]);
+
+  })(req, res);
 });
 
-UsersCtrl.get('/users/:id', (req, res, next) => {
-  const users = UsersCtrl.users_tb;
-  const { id }  = req.params;
-  if(!users[id]) {
-    const {user_not_found} = UsersCtrl.errors_msg_obj;
-    return res.send(user_not_found);
-  }
-  const curr_user = Object.assign({}, users[id])
-  delete curr_user.password;
-  res.send(curr_user);
+UsersCtrl.get('/users', null, (req, res, next) => {
+  UsersCtrl._sendJSONresponse(res, '200', {}, 'public');
 });
 
-UsersCtrl.post('/users/', (req, res, next) => {
-  const {
-    user_doesnt_have_an_id
-  } = UsersCtrl.errors_msg_obj;
-  res.send(user_doesnt_have_an_id);
-})
-
-UsersCtrl.post('/users/:email', (req, res, next) => {
-  const users = UsersCtrl.users_tb;
-  const { email }  = req.params;
-  const { body } = req;
-  const {
-    user_id_allready_exists,
-  } = UsersCtrl.errors_msg_obj;
-
-  if(users[email]) {
-    return res.send(user_id_allready_exists);
-  }
-  const newUser = Object.assign({}, body, {email});
-  const errors = UsersCtrl.getTestValidation(newUser);
-
-  if(errors){
-    return res.send(errors);
-  };
-
-  users[email] = newUser;
-  res.send(users[email]);
-})
-
-UsersCtrl.put('/users/', (req, res, next) => {
-  const {
-    user_doesnt_have_an_id
-  } = UsersCtrl.errors_msg_obj;
-  res.send(user_doesnt_have_an_id);
-})
-
-UsersCtrl.put('/users/:email', (req, res, next) => {
-  const users = UsersCtrl.users_tb;
-  const { email }  = req.params;
-  const { user_id_doesnt_exists } = UsersCtrl.errors_msg_obj;
-  const { body } = req;
-
-  if(!users[email]) {
-    return res.send(user_id_doesnt_exists);
-  }
-  const updateUser = Object.assign({}, user[email], body, {email})
-  const errors = UsersCtrl.getTestValidation(updateUser);
-
-  if(errors){
-    return res.send(errors);
-  };
-
-  users[email] = updateUser;
-  res.send(users[email]);
-})
-
-UsersCtrl.delete('/users/', (req, res, next) => {
-  const {
-    user_doesnt_have_an_id
-  } = UsersCtrl.errors_msg_obj;
-  res.send(user_doesnt_have_an_id);
-})
-
-UsersCtrl.delete('/users/:email', (req, res, next) => {
-  const users = UsersCtrl.users_tb;
-  const { email}  = req.params;
-  const { user_id_doesnt_exists } = UsersCtrl.errors_msg_obj;
-
-  if(!users[email]) {
-    return res.send(user_id_doesnt_exists);
-  }
-
-  delete users[email];
-  res.send({delete_user: email});
+UsersCtrl.get('/users-permisions', {isPrivate: true}, (req, res, next) => {
+  return UsersCtrl._sendJSONresponse(res, '200', req.loginUser.permissions);
 });
 
 module.exports = UsersCtrl;

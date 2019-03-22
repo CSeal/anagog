@@ -1,19 +1,18 @@
 function getValidRules(errors_msg_const) {
   return {
-    first_name: (val) => {
+    userName: (val) => {
       if(!val){
-        const { first_name_is_not_defined } = errors_msg_const;
-        return first_name_is_not_defined;
+        const { user_must_be_required } = errors_msg_const;
+        return user_must_be_required;
       }
     },
     password: (val) => {
       if(!val){
-        const { password_is_not_defined } = errors_msg_const;
-        return password_is_not_defined;
+        const { password_must_be_required } = errors_msg_const;
+        return password_must_be_required;
       }
     }
   };
 }
-
 
 module.exports = getValidRules;

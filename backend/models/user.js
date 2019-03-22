@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const uniqueValidator = require('mongoose-unique-validator')
+const jwt = require('jsonwebtoken');
 
 mongoose.plugin(uniqueValidator);
 
@@ -10,34 +11,64 @@ const UserSchema = new Schema({
     type: String,
     unique: 'User with name "VALUE" already exist',
     lowercase: true,
-    required: 'UserName is required',
+    required: 'UserName must be required',
   },
   password: {
     type: String,
-    required: 'Password is required',
+    required: 'Password must be required',
   },
+  salt: {
+    type: String
+  },
+  permissions: {
+    canUpdate: {
+      type: Boolean,
+      default: false,
+    },
+    canDelete: {
+      type: Boolean,
+      default: false,
+    },
+    canAddUsers: {
+      type: Boolean,
+      default: false,
+    }
+  }
 }, {
-  timestamp: true,
+  timestamps: true,
 });
-
-UserSchema.statics.createFields = ['userName', 'password'];
 
 UserSchema.pre('save', function(next) {
   if ( !this.isModified('password') ) {
     return next();
   }
-  const salt = bcrypt.genSaltSync(10);
-  this.password = bcrypt.hashSync(this.password, salt);
+  this.salt = crypto.randomBytes(128).toString('base64');
+  this.password = crypto.pbkdf2Sync(this.password, this.salt, 1, 128, 'sha1');
   next();
 });
 
 UserSchema.methods.comparePasswords = function(password) {
-  return bcrypt.compareSync(password, this.password);
+  if (!password) return false;
+  if (!this.password) return false;
+  return crypto.pbkdf2Sync(password, this.salt, 1, 128, 'sha1') == this.password;
 };
 
-UserSchema.statics.findOneWithPublicFields = function(params, callback) {
-  return this.findOne(params, callback).select({password: 0, _id: 0, __v: 0, createdAt: 0, updatedAt: 0 });
-};
+UserSchema.static('findOneWithPublicFields', function(params, callback) {
+  return this.findOne(params, callback).select({"password": 0, "_id": 0, "__v": 0, "salt": 0, "createdAt": 0, "updatedAt": 0 });
+});
+
+
+UserSchema.methods.generateJWT = function(payload) {
+  const secret = 'Anagog';
+  const options = {
+    expiresIn: '1d',
+  };
+  if (!payload || secret === "") {
+    return false;
+  }
+  return jwt.sign(payload, secret, options);
+}
+
 const User = mongoose.model('user', UserSchema);
 User.init().then( User => {
   User.findOne({userName: 'admin'}, (err, adminUser) => {
@@ -50,7 +81,12 @@ User.init().then( User => {
     User.create({
       userName: 'admin',
       password: 'anagog',
-    }, (err, admin) => {
+      permissions: {
+        canUpdate: true,
+        canDelete: true,
+        canAddUsers: true,
+      }
+    }, (err) => {
       if (err) {
         return console.log(err);
       }
