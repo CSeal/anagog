@@ -11,6 +11,10 @@ const error = {
     error_type: 'pussword_must_be_required',
     error_msg: 'Password must be required'
   },
+  password_must_be_valid: {
+    error_type: 'password_must_be_valid',
+    error_msg: 'Password must be valid(Minimum eight characters, at least one letter and one numbe)'
+  },
   users_token_was_not_created: {
     error_type: 'users_token_was_not_created',
     error_msg: 'User`s token was not created'

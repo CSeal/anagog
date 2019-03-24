@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 const crypto = require('crypto');
 const uniqueValidator = require('mongoose-unique-validator')
 const jwt = require('jsonwebtoken');
+const errors_msg_obj = require('../error_const');
 
 mongoose.plugin(uniqueValidator);
 
@@ -15,7 +16,12 @@ const UserSchema = new Schema({
   },
   password: {
     type: String,
-    required: 'Password must be required',
+    validate: {
+      validator: function(password){
+        return /(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password);
+      },
+      message: errors_msg_obj.password_must_be_valid.error_msg,
+    }
   },
   salt: {
     type: String
@@ -80,7 +86,7 @@ User.init().then( User => {
     }
     User.create({
       userName: 'admin',
-      password: 'anagog',
+      password: 'Anagog22',
       permissions: {
         canUpdate: true,
         canDelete: true,

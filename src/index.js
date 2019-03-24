@@ -1,25 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import createBrowserHistory from 'history/createBrowserHistory';
 import { Provider } from 'mobx-react';
-import { RouterStore, syncHistoryWithStore } from 'mobx-react-router';
 import { Router } from 'react-router';
+import { MuiThemeProvider } from '@material-ui/core/styles';
+import { theme } from './mui-theme';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-
-const browserHistory = createBrowserHistory();
-const routingStore = new RouterStore();
-
-const stores = {
-  routing: routingStore,
-};
-
-const history = syncHistoryWithStore(browserHistory, routingStore);
+import { stores, history } from './store';
 
 ReactDOM.render(
   <Provider {...stores}>
     <Router history={history}>
-      <App />
+      <MuiThemeProvider theme={theme}>
+        <App />
+      </MuiThemeProvider>
     </Router>
   </Provider>,
   document.getElementById('root')
