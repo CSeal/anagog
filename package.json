@@ -22,6 +22,7 @@
     "mobx-react": "^5.4.3",
     "mobx-react-form": "^2.0.0",
     "mobx-react-router": "^4.0.5",
+    "moment": "^2.24.0",
     "mongoose": "^5.4.19",
     "mongoose-unique-validator": "^2.0.2",
     "nodemon": "^1.18.10",

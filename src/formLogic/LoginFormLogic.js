@@ -26,7 +26,6 @@ export default function({activeUser, routing}) {
           activeUser.initActiveUser(response.data.user);
           routing.push(ROUTES.root);
         }
-        console.log(activeUser.getActiveUserName);
       },
       onError(form){
         console.log('All form errors', form.errors());

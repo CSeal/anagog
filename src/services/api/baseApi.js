@@ -123,7 +123,7 @@ export class BaseApi {
       };
 
       if (data.data) {
-        rezult.data = {...data.data};
+        rezult.data = data.data;
         if (rezult.data.token) {
           this.tokenService.setToken(rezult.data.token);
           delete rezult.data.token;

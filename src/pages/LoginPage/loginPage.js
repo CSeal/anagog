@@ -21,7 +21,7 @@ class LoginPage extends Component {
     return (
     <>
       <h1>Operational Client</h1>
-      <form>
+      <form autoComplete='off'>
         <TextField
           {...loginProps}
           error={!!loginForm.$('userName').error}

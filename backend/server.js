@@ -13,7 +13,7 @@ server.set('cors', true);
 
 server.use((req, res, next) => {
   if (server.get('cors')) {
-    res.setHeader('Access-Control-Allow-Headers', 'content-type, x-requested-with');
+    res.setHeader('Access-Control-Allow-Headers', 'content-type, x-requested-with, authorization');
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, GET, DELETE, PUT');
     res.setHeader('Access-Control-Max-Age', '86400');
